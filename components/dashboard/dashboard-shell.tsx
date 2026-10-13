@@ -11,7 +11,7 @@ import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { logout } from "@/slice/auth.slice";
-import { authApi } from "@/service/api/auth.api";
+import { baseApi } from "@/service/api/base.api";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 export function DashboardShell() {
@@ -35,7 +35,7 @@ export function DashboardShell() {
               variant="outline"
               onClick={() => {
                 dispatch(logout());
-                dispatch(authApi.util.resetApiState());
+                dispatch(baseApi.util.resetApiState());
               }}
             >
               <LogOut aria-hidden="true" className="size-4" />

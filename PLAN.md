@@ -6,6 +6,8 @@ Status: **Complete — Redux memory only**
 
 Keep the existing folders, reusable Yup schemas, Formik login, dashboard, and IBM Plex Sans theme. Store the token and employee only in Redux memory. Refreshing the app requires login again. The previous browser-storage and JWT-lifecycle design is superseded.
 
+Use one shared `baseApi` instance with empty endpoints and `reducerPath: "api"`. Feature modules import it, call `injectEndpoints`, and export their typed APIs and generated hooks. Importing a feature module registers its endpoints; new feature modules require no changes to `createApi` or store registration. Logout resets the shared API cache.
+
 ## Confirmed API contract
 
 - Send `{ email, password }` to `POST /admin/login`.
@@ -18,7 +20,7 @@ Keep the existing folders, reusable Yup schemas, Formik login, dashboard, and IB
 
 - [x] Keep the existing folder structure and the base query in `service/httpclient`.
 - [x] Export `fetchBaseQuery` directly with API URL configuration, `prepareHeaders`, and success validation.
-- [x] Define `authApi` directly with `createApi` and a normal `builder.mutation`/`query`; remove the empty base API and endpoint injection.
+- [x] Define `baseApi` once with `createApi`; inject the login mutation through `authApi`, register the shared reducer/middleware, and reset all feature caches on logout.
 - [x] Keep `makeStore()` creating a fresh store for each provider, inferred types, typed hooks, lazy provider initialization, and the Next.js Suspense boundary.
 - [x] Simplify auth state to token and employee with `setCredentials` and `logout`.
 - [x] Remove session helpers/types/schemas, storage access, restoration, listener middleware, expiry timers, JWT decoding, and automatic HTTP-401 invalidation.
@@ -42,6 +44,8 @@ Keep the existing folders, reusable Yup schemas, Formik login, dashboard, and IB
 - Google Fonts access is needed for the first build. Browser tests use installed Google Chrome and a production build on port 3100 with mocked login responses.
 
 ## Current progress notes
+
+- 2026-10-13: Replaced feature-specific API creation with the shared `baseApi` and endpoint injection. Migrated the API cache from `state.authApi` to `state.api` and added coverage for endpoints injected after store creation and shared cache clearing. All 16 unit/API checks, lint, and TypeScript checking passed. Vitest uses a synthetic API URL so mocked requests work without local environment configuration. Production build and browser tests were not rerun for this refactor.
 
 - 2026-10-13: Implemented the requested memory-only simplification. Verification is in progress; baseline UI and folder structure were preserved.
 

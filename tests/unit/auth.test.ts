@@ -4,6 +4,7 @@ import { loginSchema } from "@/schema/login.schema";
 import { baseQuery } from "@/service/httpclient/base-query";
 import { getApiError } from "@/service/httpclient/errors";
 import { authApi } from "@/service/api/auth.api";
+import { baseApi } from "@/service/api/base.api";
 import { logout, setCredentials } from "@/slice/auth.slice";
 import { makeStore } from "@/store";
 import { loginResponse } from "../fixtures/auth";
@@ -36,7 +37,7 @@ beforeEach(() => {
   });
 });
 afterEach(() => {
-  stores.splice(0).forEach((store) => store.dispatch(authApi.util.resetApiState()));
+  stores.splice(0).forEach((store) => store.dispatch(baseApi.util.resetApiState()));
   expect(readStorage).not.toHaveBeenCalled();
   vi.unstubAllGlobals();
 });
@@ -58,7 +59,46 @@ describe("reusable login validation", () => {
   });
 });
 
-describe("direct auth API and shared base query", () => {
+describe("injected auth API and shared base query", () => {
+  it("runs endpoints injected after store creation and clears all feature caches together", async () => {
+    const store = newStore();
+    const featureApi = baseApi.injectEndpoints({
+      overrideExisting: false,
+      endpoints: (builder) => ({
+        testFeature: builder.query<{ responseCode: string; data: { name: string } }, void>({
+          query: () => "/test-feature",
+        }),
+      }),
+    });
+    const loginFixture = loginResponse();
+    const featureResponse = { responseCode: "00", data: { name: "Test feature" } };
+    const fetch = vi.fn()
+      .mockResolvedValueOnce(Response.json(loginFixture))
+      .mockResolvedValueOnce(Response.json(featureResponse));
+    vi.stubGlobal("fetch", fetch);
+
+    await store.dispatch(authApi.endpoints.login.initiate({
+      email: "admin@example.com", password: "test",
+    })).unwrap();
+    store.dispatch(setCredentials(loginFixture.data));
+    const request = store.dispatch(featureApi.endpoints.testFeature.initiate());
+    try {
+      expect(await request.unwrap()).toEqual(featureResponse);
+      const httpRequest = fetch.mock.calls[1][0] as Request;
+      expect(httpRequest.url).toMatch(/\/test-feature$/);
+      expect(httpRequest.method).toBe("GET");
+      expect(httpRequest.headers.get("Authorization")).toBe("Bearer test-access-token");
+      expect(Object.keys(store.getState().api.queries)).toHaveLength(1);
+      expect(Object.keys(store.getState().api.mutations)).toHaveLength(1);
+
+      store.dispatch(baseApi.util.resetApiState());
+      expect(store.getState().api.queries).toEqual({});
+      expect(store.getState().api.mutations).toEqual({});
+    } finally {
+      request.unsubscribe();
+    }
+  });
+
   it("posts credentials and returns the original response without updating auth automatically", async () => {
     const store = newStore();
     const response = loginResponse();
@@ -140,7 +180,7 @@ describe("direct auth API and shared base query", () => {
     const result = await baseQuery("/protected", queryContext(store), {});
     expect(result.error?.status).toBe(401);
     expect(store.getState().auth).toEqual({ token: credentials.access_token, employee: credentials.employee });
-    expect(Object.keys(store.getState().authApi.mutations)).toHaveLength(1);
+    expect(Object.keys(store.getState().api.mutations)).toHaveLength(1);
   });
 });
 
@@ -160,10 +200,10 @@ describe("memory-only store and logout", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json(response)));
     await store.dispatch(authApi.endpoints.login.initiate({ email: "admin@example.com", password: "test" }));
     store.dispatch(setCredentials(response.data));
-    expect(Object.keys(store.getState().authApi.mutations)).toHaveLength(1);
+    expect(Object.keys(store.getState().api.mutations)).toHaveLength(1);
     store.dispatch(logout());
-    store.dispatch(authApi.util.resetApiState());
+    store.dispatch(baseApi.util.resetApiState());
     expect(store.getState().auth).toEqual({ token: null, employee: null });
-    expect(store.getState().authApi.mutations).toEqual({});
+    expect(store.getState().api.mutations).toEqual({});
   });
 });

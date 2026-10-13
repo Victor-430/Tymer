@@ -1,12 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "@/slice/auth.slice";
-import { authApi } from "@/service/api/auth.api";
+import { baseApi } from "@/service/api/base.api";
 
 export function makeStore() {
   return configureStore({
-    reducer: { auth: authReducer, [authApi.reducerPath]: authApi.reducer },
+    reducer: { auth: authReducer, [baseApi.reducerPath]: baseApi.reducer },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware()
-      .concat(authApi.middleware),
+      .concat(baseApi.middleware),
     // Authentication data must not be retained in production DevTools history.
     devTools: process.env.NODE_ENV !== "production",
   });

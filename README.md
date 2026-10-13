@@ -18,7 +18,7 @@ IBM Plex Sans is downloaded at build time by `next/font/google` and served local
 ## Structure
 
 - `schema`: shared Yup credential rules and reusable auth/login schemas.
-- `service/api`: `authApi`, defined directly with `createApi` and a normal login mutation.
+- `service/api`: the shared `baseApi` instance and feature APIs such as `authApi`, which inject their endpoints.
 - `service/httpclient`: the shared `fetchBaseQuery` and form error handling.
 - `slice`: in-memory token and employee state with `setCredentials` and `logout`.
 - `store`: store factory, inferred types, typed hooks, and client provider.
@@ -26,9 +26,11 @@ IBM Plex Sans is downloaded at build time by `next/font/google` and served local
 
 Endpoints use the normal `query` pattern. The base query stays in `service/httpclient`; it configures the API URL, attaches the Redux bearer token through `prepareHeaders` (except for login), and validates HTTP success plus `responseCode: "00"`. The login mutation returns the API response directly. HTTP 422 validation details are mapped to matching form fields.
 
+`baseApi` calls `createApi` once with an empty endpoint list. Each feature module imports `baseApi`, calls `baseApi.injectEndpoints({ endpoints: (builder) => ({ ... }), overrideExisting: false })`, and exports hooks from the returned API. For example, `auth.api.ts` exports `authApi` and `useLoginMutation`. Importing a feature API or one of its hooks registers that module's endpoints; the shared instance does not import feature modules. The store registers only `baseApi.reducer` and `baseApi.middleware`, with the shared cache under `state.api`. Adding another feature module requires no changes to `createApi` or the store.
+
 `makeStore()` creates a fresh store for each provider; the client provider initializes it once through `useState(makeStore)`. The root Suspense boundary is retained for the installed Next.js Cache Components configuration.
 
-Authentication stays only in Redux memory. No browser storage, restoration, JWT decoding, expiry timers, or listener middleware is used. Refreshing or reopening the app requires login again. Client navigation keeps the existing store. Logout explicitly clears auth state and the auth API cache. HTTP 401 is an ordinary request error and does not automatically clear auth. The API must verify tokens and authorize protected requests.
+Authentication stays only in Redux memory. No browser storage, restoration, JWT decoding, expiry timers, or listener middleware is used. Refreshing or reopening the app requires login again. Client navigation keeps the existing store. Logout explicitly clears auth state and every injected endpoint's cache through `baseApi.util.resetApiState()`. HTTP 401 is an ordinary request error and does not automatically clear auth. The API must verify tokens and authorize protected requests.
 
 The login schema trims email but preserves passwords exactly. Login checks for a nonempty access token and employee data before updating Redux.
 
