@@ -1,6 +1,24 @@
 ﻿# Phase-one authentication and plan tracker
 
-Status: **Complete — Redux memory only**
+Status: **Complete — mock data enabled by default**
+
+## Project guidance
+
+Read [intent.md](./intent.md) for product/design direction and [spec.md](./spec.md) for architecture and implementation conventions before feature work. [AGENTS.md](./AGENTS.md) requires this reading; [README.md](./README.md) contains setup and verification commands. Keep feature scope, decisions, progress, and verification here, separate from lasting intent and specifications.
+
+The requested preset, shell references, charts, and future shared Formik adapters are documented preferences. They are not installed or implemented by this documentation phase. The phase-one preservation notes below describe the completed implementation, not a prohibition on future UI changes requested by the user.
+
+## Temporary mock data phase
+
+- Default to mock transport; only explicit `NEXT_PUBLIC_DATA_SOURCE=api` enables the existing HTTP implementation.
+- Connect the existing login/dashboard flow using `admin@example.com` / `TymerDemo123!` and synthetic credentials. Unsupported operations return mock errors without HTTP fallback.
+- Provide fresh, typed requests/responses across non-academic modules and academic request examples only through `createMockData()`.
+- Keep authentication and fixtures in memory. No new screens, dependencies, feature endpoints, or mock CRUD in this phase.
+- Preserve the HTTP regression suite in explicit API mode; add fixture consistency, mock transport, and browser checks.
+
+The phase-one notes below describe the retained authentication architecture and historical verification.
+
+Verification: lint, TypeScript checking, all 34 unit checks, and the production build passed. The production-browser mock check passed for invalid/demo login, dashboard display, client navigation, logout, refresh, empty browser storage, and no backend requests or runtime/hydration errors. All 150 API operations have examples (academic operations are request-only). The HTTP unit suite passed in explicit API mode; its original browser suite was preserved but not rerun. The Windows browser test server required explicit cleanup after the test completed.
 
 ## Current plan
 

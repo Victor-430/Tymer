@@ -2,6 +2,8 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  // Must match NEXT_PUBLIC_DATA_SOURCE used for the production build.
+  testMatch: process.env.NEXT_PUBLIC_DATA_SOURCE === "api" ? "auth.spec.ts" : "mock.spec.ts",
   fullyParallel: false,
   workers: 1,
   timeout: 60_000,

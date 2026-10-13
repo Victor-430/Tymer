@@ -8,6 +8,6 @@ export default defineConfig({
     environment: "node",
     clearMocks: true,
     // Mocked requests still need an absolute URL when constructed in Node.
-    env: { NEXT_PUBLIC_API_BASE_URL: "https://api.example.test" },
+    env: { NEXT_PUBLIC_API_BASE_URL: "https://api.example.test", NEXT_PUBLIC_DATA_SOURCE: "api" },
   },
 });
