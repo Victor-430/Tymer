@@ -4,7 +4,7 @@ Read this document before starting project or feature work, together with [spec.
 
 ## Product goal
 
-Build a polished, coherent Tymer admin dashboard from login through daily workspace operations. Approach decisions with the judgment of an experienced software and product/UI/UX engineer: understand the user's task, make information easy to scan, and keep interactions clear and consistent.
+Build a modern, polished, coherent Tymer admin dashboard from login through daily workspace operations. Use clear typography, generous spacing, balanced layouts, cohesive navigation, informative charts, and refined interaction feedback. Approach decisions with the judgment of an experienced software and product/UI/UX engineer: understand the user's task, make information easy to scan, and keep interactions clear and consistent.
 
 Use the existing API models and related mock records to understand the product's entities, relationships, statuses, and workflows. Choose meaningful metrics and charts that help administrators understand their organization and decide what to do next.
 
@@ -20,13 +20,23 @@ These are preferences for future UI implementation. Recording them does not inst
 | Donut visualization | `@uiarc/donut-chart` | Prefer for part-to-whole data when it communicates the metric clearly. |
 | Waffle visualization | `@uiarc/waffle-chart` | Prefer for suitable proportions, progress, or counts with an understandable scale. |
 
-The supplied reference commands are `npx shadcn@latest add sidebar-07`, `npx shadcn@latest add login-03`, `pnpm dlx shadcn@latest add @uiarc/donut-chart`, and `pnpm dlx shadcn@latest add @uiarc/waffle-chart`. They identify the requested references; use the project's actual package manager and inspect the preset/registry requirements when UI implementation is in scope.
+Use **npm** as the project's package manager and **npx** to run CLI tools. The reference commands are:
+
+```sh
+npx shadcn@latest add sidebar-07
+npx shadcn@latest add login-03
+npx shadcn@latest add @uiarc/donut-chart
+npx shadcn@latest add @uiarc/waffle-chart
+```
+
+These commands identify the requested references. Inspect the preset/registry requirements when UI implementation is in scope.
 
 Resolve the preset's actual token values before applying it. Do not invent its palette or assume it is already configured. Adapt the shell references to Tymer's content and workflows. Preset tokens govern colors, spacing, typography, borders, and radius; there is no mandatory zero-radius rule.
 
 ## User experience expectations
 
 - Build responsive layouts that remain readable and usable on mobile and desktop. Keep navigation, hierarchy, spacing, and interaction patterns consistent.
+- Keep table presentation consistent across features by reusing shadcn Table primitives and shared table behavior where appropriate. Make rows, columns, and actions easy to scan and operate; follow the reuse rules in [spec.md](./spec.md).
 - Make charts informative: use clear titles, labels, units, legends where needed, and a readable summary or accessible equivalent. Preserve the meaning of zero, missing, and undisclosed data; choose the visualization to fit the question.
 - Provide visible labels, keyboard access, focus states, accessible names, and readable feedback. Do not rely on color alone to convey status.
 - Give lists, forms, and charts meaningful loading, empty, error, and success states. Prevent duplicate submissions and make recovery clear.

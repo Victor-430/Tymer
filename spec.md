@@ -56,6 +56,16 @@ const formik = useFormik<LoginValues>({
 - Reuse validators from `schema/fields.ts` and compose domain schemas in `schema/`. Add shared validators there when a rule is reused, with its business reason. Do not scatter repeated regular expressions or switch to Zod.
 - Preserve existing login semantics: trim email, submit passwords exactly, and require a password without imposing signup-strength rules on login. Prevent duplicate submissions and handle request cancellation where relevant.
 
+## Tables: shadcn primitives and shared behavior
+
+- Use **shadcn's reusable Table primitives** as the table foundation. Reuse those primitives directly for simple tables.
+- When screens share sorting, pagination, selection, or loading/empty behavior, compose a reusable table component in `components/shared/` using the shadcn primitives.
+- Shared table components accept typed data and configurable columns, cell rendering, and actions through props. Keep data fetching and domain-specific rules in the consuming feature.
+- Inspect and extend existing table components before introducing another implementation. Avoid duplicating complete table implementations across screens.
+- Keep common presentation and supported behavior in the shared component. When it owns loading and empty states, do not duplicate those states around it.
+
+These rules guide future feature work; this documentation change does not install Table primitives or implement a table component.
+
 ## Models, data, and API behavior
 
 - Use named request and response types from the existing model files, with specific imports. Do not define API body/parameter/response shapes inline inside endpoints, components, or hooks. Local presentation props and view models may be defined where appropriate.
