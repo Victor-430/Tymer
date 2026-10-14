@@ -10,11 +10,11 @@ Use the existing API models and related mock records to understand the product's
 
 ## Preferred design references
 
-These are preferences for future UI implementation. Recording them does not install components or mean the existing screens already follow these references.
+The mock dashboard implements the selected direction below. The October 13, 2026 dashboard request replaces the earlier violet preset preference with teal and neutral surfaces, retaining IBM Plex Sans and Lucide.
 
 | Area | Reference | Intended use |
 | --- | --- | --- |
-| Visual foundation | shadcn preset `b1VqhqnA` | Use its colors and design tokens consistently across screens and charts. |
+| Visual foundation | Teal accents, neutral surfaces, Luma primitives | Share theme tokens across login, dashboard, tables, and charts. Retain IBM Plex Sans, Lucide, and the existing radius scale. |
 | Dashboard shell | shadcn `sidebar-07` | Inspiration for workspace navigation, sidebar, and dashboard composition. |
 | Login shell | shadcn `login-03` | Inspiration for the login layout and presentation. |
 | Donut visualization | `@uiarc/donut-chart` | Prefer for part-to-whole data when it communicates the metric clearly. |
@@ -31,7 +31,7 @@ npx shadcn@latest add @uiarc/waffle-chart
 
 These commands identify the requested references. Inspect the preset/registry requirements when UI implementation is in scope.
 
-Resolve the preset's actual token values before applying it. Do not invent its palette or assume it is already configured. Adapt the shell references to Tymer's content and workflows. Preset tokens govern colors, spacing, typography, borders, and radius; there is no mandatory zero-radius rule.
+Use the installed Tailwind palette through shared CSS tokens: teal-700 primary, teal-50 selection backgrounds, white cards, and neutral surfaces/text/borders. Adapt the shell references to Tymer's content and workflows. Retain the existing radius scale.
 
 ## User experience expectations
 
@@ -45,6 +45,6 @@ Resolve the preset's actual token values before applying it. Do not invent its p
 
 ## Current phase and future work
 
-The current app has an admin login and a protected dashboard shell. Mock mode is the default, authentication stays in memory, and only login has a connected mock handler. Reusable fixtures cover the other domains; academic fixtures contain requests only because their response payloads are unspecified.
+The app has an admin login, an operations overview, and protected employee, location, attendance, patrol, task, visitor, and organization pages. Mock mode is the default, authentication stays in memory, and typed RTK Query reads connect the response-backed fixture domains. Academic fixtures remain request-only because response payloads are unspecified.
 
-Dashboard redesign, chart installation, additional screens, and broader workflows are future feature work. Use mock data during that work until backend integration is explicitly requested. Consult [PLAN.md](./PLAN.md) for current scope and completed work; consult [spec.md](./spec.md) for implementation rules.
+The workspace supports browsing, searching, sorting, filtering, pagination, and record inspection. Record mutations, academic screens, and backend integration require further scope. The overview uses the fixture day and Africa/Lagos time; do not fabricate historical trends or hide pending evidence/verification states. Consult [PLAN.md](./PLAN.md) for progress and [spec.md](./spec.md) for implementation rules.

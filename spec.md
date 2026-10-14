@@ -64,7 +64,7 @@ const formik = useFormik<LoginValues>({
 - Inspect and extend existing table components before introducing another implementation. Avoid duplicating complete table implementations across screens.
 - Keep common presentation and supported behavior in the shared component. When it owns loading and empty states, do not duplicate those states around it.
 
-These rules guide future feature work; this documentation change does not install Table primitives or implement a table component.
+`components/shared/data-table.tsx` implements this foundation with typed columns, client search/status filters, sorting, and ten-row pagination. Domain features supply records and actions; detail sheets remain in the feature layer.
 
 ## Models, data, and API behavior
 
@@ -73,6 +73,7 @@ These rules guide future feature work; this documentation change does not instal
 - The existing envelope is `ApiResponse<T>` with `responseCode`, `responseMessage`, and optional/nullable `data`. Preserve it at the service boundary. Components may read `.data` after appropriate checks; do not automatically add `transformResponse` unwrapping.
 - Academic response aliases leave the payload generic. Keep their mocks request-only until actual response shapes are supplied; do not invent DTOs or currency/business rules from another project.
 - Call `createApi` once in `service/api/base.api.ts`. Feature modules inject endpoints into that instance and export generated hooks. Keep endpoint names unique; never resolve collisions with `overrideExisting: true`.
+- Group workspace queries by domain in `service/api/<domain>.api.ts`, matching the existing fixture ownership. Each file exports its domain API object and hooks; consumers import from that file directly. Location access and NFC belong to the locations module; checkpoints, instances, sessions, and reports belong to patrols. Keep reusable fixture helpers in `service/httpclient/dashboard-mocks.ts`.
 - Importing a feature API or hook registers its endpoints. The store registers the shared API reducer and middleware once. Do not assume an endpoint-registration barrel exists or introduce a second API slice.
 - Use actual endpoint contracts and paths, such as `/admin/login`. This project has no universal `/api/v1/` prefix requirement. Centralize repeated route/asset paths when introduced without assuming nonexistent utilities already exist.
 - Use centralized error handling from `service/httpclient/`, including `getApiError` for the current login flow. Extend its behavior when new domains require it; do not expose stacks or unprocessed internal errors to users.
@@ -81,9 +82,9 @@ These rules guide future feature work; this documentation change does not instal
 
 Backend integration requires an explicit user request. Keep `NEXT_PUBLIC_DATA_SOURCE` in mock mode during current feature development; only the exact value `api` selects HTTP transport. Missing or unrecognized values use mocks. Public environment changes require a development restart or a production rebuild.
 
-Mock dispatch uses the RTK Query endpoint name. Only `login` currently has a handler. Unsupported operations return a clear error with no HTTP fallback. When a future feature requires another operation, add its mock behavior within that feature's scope and verify that it never calls the backend.
+Login mock dispatch uses the RTK Query endpoint name. Unsupported base-query operations return a clear error with no HTTP fallback. Workspace read queries are injected into the same `baseApi` using mock-only `queryFn` handlers and the centralized `fixtureQuery` adapter in `service/httpclient/dashboard-mocks.ts`. Each read creates fresh related fixtures, keeps named request/response contracts and API envelopes, and honours supported identities/filters. Explicit API mode returns an unsupported-operation error for these reads until actual backend paths/integration are authorized. Never invent HTTP paths for fixture-only operations.
 
-Use `createMockData()` from `mock/index.ts` for related fixture examples. Each call returns fresh records, arrays, and upload blobs. Keep fixtures in memory and reset to defaults on reload. Importing a request example does not execute a mutation. Preserve consistent identities and derive summaries from their records. Demo credentials/tokens are synthetic; upload placeholders are not real biometric images, and QR generation currently supplies an error example.
+Use `createMockData()` from `mock/index.ts` for related fixture examples. Each call returns fresh records, arrays, and upload blobs. Keep fixtures in memory and reset to defaults on reload. Importing a request example does not execute a mutation. Preserve consistent identities and derive summaries from their records. Count distinct active employees for attendance, use the first check-in for punctuality, and retain separate task waiting states. Demo credentials/tokens are synthetic; upload placeholders are not real biometric images, and QR generation currently supplies an error example. Never serialize fixture requests/upload blobs into Redux query results.
 
 Authentication lives only in Redux memory. Read the token from `state.auth.token`; do not add local/session storage, cookies, restoration, expiry parsing, token refresh, or automatic HTTP-401 logout without a requested change. Client navigation retains the store; refreshing requires login again. Logout clears authentication and all shared API caches. Retain required login-data checks before setting credentials.
 
@@ -92,7 +93,8 @@ Authentication lives only in Redux memory. Read the token from `state.auth.token
 - Use TypeScript without `any`; use `unknown` and narrow when data is uncertain. Prefer precise types and avoid assertions that conceal mismatches.
 - Export components in PascalCase from kebab-case files. Retain Next.js route naming, existing `.api.ts`/`.slice.ts` conventions, named `<Operation>Request`/`<Operation>Response` contracts, and `use*` hook names.
 - Keep route files small and compose feature components. Declare `"use client"` at the boundary that needs hooks or browser interaction; keep static composition and metadata on the server where possible. Provide the required Suspense boundary when using `useSearchParams`.
-- Apply design tokens from `app/globals.css` and the selected preset; avoid scattered raw color values. Do not impose zero radius or introduce a theme policy that conflicts with [intent.md](./intent.md).
+- Apply design tokens from `app/globals.css` and the teal/neutral direction in `intent.md`; avoid scattered raw color values. Do not impose zero radius.
+- Scope the Tailwind Turbopack loader to `globals.css`. Let Next.js handle CSS Modules natively; renaming `.module.css` to `.css` breaks scoped chart styles and leaks selectors into other layouts. Arc foundation tokens load before the app's overrides; its chart fonts and series colors use the app's shared tokens.
 - Build reusable charts with clear data props; keep data retrieval/aggregation outside presentation primitives. Provide readable empty/error/loading states and accessible summaries. Prefer the requested chart references when suitable.
 - Keep rendered controls functional and layouts responsive. If a reusable table or component owns its loading/empty states, avoid duplicating that presentation around it. Do not assume unimplemented helpers, tables, toasters, or modal systems exist.
 - Run verification appropriate to the change. Behavior changes normally require lint, TypeScript checks, relevant unit tests, and browser/build checks where warranted. Test outcomes and failure cases rather than merely repeating the implementation.

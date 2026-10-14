@@ -1,12 +1,32 @@
-﻿# Phase-one authentication and plan tracker
+# Tymer feature plan tracker
 
-Status: **Complete — mock data enabled by default**
+Status: **Complete — mock dashboard enabled by default**
+
+## Domain API refactor — October 14, 2026
+
+- Split the 18 dashboard queries into seven domain API modules: employees, locations (including NFC/access), attendance, patrols (including checkpoints/instances/sessions/reports), tasks, visitors, and organization. Each injects into the existing `baseApi` and exports its API object and hooks.
+- Preserved endpoint/hook names, named contracts, mock fixtures, filtering, pagination, cancellation, error handling, and shared logout/cache clearing. Moved organization matching into the shared fixture adapter.
+- Migrated component/test imports directly to the owning modules and removed the combined dashboard API file. No changes to `createApi`, store registration, login, or UI behavior.
+- Verification: lint without warnings, TypeScript, all 44 unit checks, the mock-mode production build, and all 7 mock production-browser checks passed. Unit coverage verifies that all seven API exports reference the shared instance, all 18 reads share its cache, API mode rejects every workspace read without HTTP requests, and one cache reset clears all results. Browser checks verify navigation, related records, dates, mobile layouts, error recovery, login/logout, and absence of backend requests. The Windows test server was stopped explicitly after all outcomes were reported, and the runner completed with exit code 0.
+
+## Mock dashboard — October 13, 2026
+
+- Branch: `feat/mock-dashboard`. Build a balanced overview plus employee, location, attendance, patrol, task, visitor, and organization pages.
+- Browsing only: shared typed tables with search/status filters, sorting, ten-row pagination, related dataset tabs, and accessible record sheets. Mutations and academic pages are deferred.
+- Teal/neutral surfaces replace preset `b1VqhqnA`; retain IBM Plex Sans, Lucide, Luma primitives, and the existing radius scale. Arc donut/waffle charts use shared tokens and accessible summaries.
+- Eighteen mock-only RTK Query reads use fresh `createMockData()` snapshots and existing named contracts/envelopes. Preserve the shared API/store, memory-only authentication, explicit logout/cache clearing, and the existing login transport. New reads return a clear error in API mode and never contact HTTP transport.
+- Overview date: `MOCK_DATE` in Africa/Lagos. History default: October 7–13. Count distinct active employees for attendance and preserve pending evidence/verification task states.
+- Corrected the existing wildcard Tailwind loader: scope it to `globals.css` so Next.js retains native CSS Module handling. This prevents chart `.grid` selectors from leaking into page layouts. Date fields have unique IDs across cached route pages; login IDs remain unchanged.
+- Final verification: all 44 unit checks, lint without warnings, TypeScript, and production builds in mock and API modes passed. All 7 production-browser mock checks and all 12 preserved HTTP login regression checks passed. The final production build is in mock mode.
+- Browser coverage includes exact overview metrics, all routes, styled/accessibly named charts, search/status filtering/sorting, details and focus restoration, related dataset tabs, date validation and empty periods, unique field IDs, mobile overflow/reduced motion, safe fixture errors and retry, login/logout/refresh, unused browser storage, and absence of backend requests in mock mode. Desktop/mobile screenshots were reviewed; ignored browser artifacts remain in `test-results`.
+- Windows test server processes were stopped explicitly after the test outcomes were reported; both runners then completed with exit code 0. No deployment or commit was performed.
+- The phase-one sections below document the completed earlier milestone; their original screen/dependency restrictions are historical.
 
 ## Project guidance
 
 Read [intent.md](./intent.md) for product/design direction and [spec.md](./spec.md) for architecture and implementation conventions before feature work. [AGENTS.md](./AGENTS.md) requires this reading; [README.md](./README.md) contains setup and verification commands. Keep feature scope, decisions, progress, and verification here, separate from lasting intent and specifications.
 
-The requested preset, shell references, charts, and future shared Formik adapters are documented preferences. They are not installed or implemented by this documentation phase. The phase-one preservation notes below describe the completed implementation, not a prohibition on future UI changes requested by the user.
+The mock dashboard implements the selected teal direction, shared tables, shell, and charts described above. Future shared Formik adapters remain preferences; the existing `FormField` is retained. The phase-one preservation notes below describe the earlier milestone and do not restrict the authorized dashboard build.
 
 ## Temporary mock data phase
 
@@ -20,7 +40,7 @@ The phase-one notes below describe the retained authentication architecture and 
 
 Verification: lint, TypeScript checking, all 34 unit checks, and the production build passed. The production-browser mock check passed for invalid/demo login, dashboard display, client navigation, logout, refresh, empty browser storage, and no backend requests or runtime/hydration errors. All 150 API operations have examples (academic operations are request-only). The HTTP unit suite passed in explicit API mode; its original browser suite was preserved but not rerun. The Windows browser test server required explicit cleanup after the test completed.
 
-## Current plan
+## Phase-one preservation plan
 
 Keep the existing folders, reusable Yup schemas, Formik login, dashboard, and IBM Plex Sans theme. Store the token and employee only in Redux memory. Refreshing the app requires login again. The previous browser-storage and JWT-lifecycle design is superseded.
 
@@ -61,7 +81,7 @@ Use one shared `baseApi` instance with empty endpoints and `reducerPath: "api"`.
 - The API authorizes protected requests; the frontend guard controls dashboard presentation.
 - Google Fonts access is needed for the first build. Browser tests use installed Google Chrome and a production build on port 3100 with mocked login responses.
 
-## Current progress notes
+## Phase-one progress notes
 
 - 2026-10-13: Replaced feature-specific API creation with the shared `baseApi` and endpoint injection. Migrated the API cache from `state.authApi` to `state.api` and added coverage for endpoints injected after store creation and shared cache clearing. All 16 unit/API checks, lint, and TypeScript checking passed. Vitest uses a synthetic API URL so mocked requests work without local environment configuration. Production build and browser tests were not rerun for this refactor.
 
